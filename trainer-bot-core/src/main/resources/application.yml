@@ -1,0 +1,35 @@
+app:
+  bot:
+    name: ${BOT_NAME:}
+    token: ${BOT_TOKEN:}
+    admin-id: ${BOT_ADMIN_ID:213411446}
+
+spring:
+  application:
+    name: trainer-bot
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    url: jdbc:postgresql://${DB_HOST}
+    hikari:
+      maximum-pool-size: ${MAX_POOL_SIZE:10}
+  liquibase:
+    change-log: db/changelog.yml
+  messages:
+    encoding: UTF-8
+    use-code-as-default-message: false
+    basename: /messages/errors,/messages/messages
+  cache:
+    type: caffeine
+    caffeine:
+      spec: initialCapacity=10,maximumSize=100,expireAfterAccess=1h
+
+logging:
+  charset:
+    console: UTF-8
+    file: UTF-8
+  level:
+    root: ${LOGGING_ROOT:error}
+    io.lonmstalker: ${LOGGING_APP:debug}
+    org.telegram.abilitybots.api.bot: ${LOGGING_BOT:debug}
