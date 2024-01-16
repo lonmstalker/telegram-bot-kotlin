@@ -14,7 +14,8 @@ import io.lonmstalker.bot.utils.CallbackUtils.parseCallback
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.telegram.abilitybots.api.db.DBContext
-import org.telegram.abilitybots.api.util.AbilityUtils
+import org.telegram.abilitybots.api.util.AbilityUtils.getChatId
+import org.telegram.abilitybots.api.util.AbilityUtils.getUser
 import org.telegram.telegrambots.bots.DefaultBotOptions
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -37,7 +38,9 @@ class CustomAbilityBot(
         log.info("New update {}", update.updateId)
         log.debug("{}", update)
         val executeTime = measureTimeMillis {
-            val ctx = BotContext(AbilityUtils.getChatId(update), AbilityUtils.getUser(update), this)
+            val chatId = getChatId(update)
+            val ctx =
+                BotContext(chatId, getUser(update), StateEnum.byId(stateService.getState(chatId)), this)
             try {
                 execute(update, ctx)
                     .also { it.nextState?.apply { stateService.setState(ctx, this) } }
@@ -67,13 +70,12 @@ class CustomAbilityBot(
     }
 
     private fun invokeStep(ctx: BotContext): BotResponse? =
-        stateService.getState(ctx)
-            ?.let { StateEnum.byId(it) }
-            ?.let { state ->
+        ctx.currentState
+            .let { state ->
                 stateActions.asSequence()
-                                .filter { it.isSupport(state) }
-                                .firstOrNull()
-                                ?.invoke(ctx)
+                    .filter { it.isSupport(state) }
+                    .firstOrNull()
+                    ?.invoke(ctx)
             }
 
     companion object {

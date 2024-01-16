@@ -10,7 +10,7 @@ import org.telegram.abilitybots.api.db.DBContext
 class StateService(db: DBContext) {
     private val states: MutableMap<Long, Int> = db.getMap(STATE_NAME)
 
-    fun getState(ctx: BotContext): Int? = states[ctx.chatId]
+    fun getState(chatId: Long): Int = states[chatId] ?: 0
 
     fun setState(ctx: BotContext, state: StateEnum) {
         states[ctx.chatId] = state.id
